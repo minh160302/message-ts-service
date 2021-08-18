@@ -1,0 +1,15 @@
+{
+  "NODE_ENV": "development",
+  "SERVICE_NAME": "message-service",
+  "INSTANCE_ID": "message-service",
+  "HOSTNAME": "localhost",
+  "PORT": 8300,
+  "IP": "192.168.1.2",
+  "API_ROOT": "/",
+  "MONGODB_URI": "mongodb://localhost:27017/message_db",
+  "EUREKA_SERVER": {
+    "HOSTNAME": "192.168.1.2",
+    "PORT": 8761,
+    "SERVICE_PATH": "/eureka"
+  }
+}
