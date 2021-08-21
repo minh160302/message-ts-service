@@ -4,6 +4,6 @@ import express from "express"
 const router = express.Router();
 
 router.post("/", createConversation);
-router.get("/type/:type", getActiveConversations)
+router.get("/user/:username/status/:status", getActiveConversations)
 
 export default router;

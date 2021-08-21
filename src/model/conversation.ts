@@ -17,29 +17,35 @@ interface User {
 
 export interface ConversationType {
   _id: string;
-  members: Array<User>;
+  members: Array<string>;
   createdAt: string;
-  sharedMedia?: Array<any>;
+  updatedAt: string;
+  avatar: string,
+  chatName: string,
+  status: string;
 }
 
 const conversation = new Schema<ConversationType>({
-  _id: {
-    type: String,
-  },
   members: [{
-    user_id: String,
-    username: String,
-    profile_picture: String,
+    type: String,
     _id: false,
   }],
   created_at: {
     type: String,
     required: true
   },
-  shared_media: [{
+  updated_at: {
+    type: String,
+    required: true
+  },
+  avatar: {
     type: String,
     required: false
-  }],
+  },
+  chatName: {
+    type: String,
+    required: false
+  },
   status: {
     type: String,
     required: true

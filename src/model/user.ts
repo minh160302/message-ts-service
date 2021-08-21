@@ -1,9 +1,9 @@
-import { model, Schema } from "mongoose";
+import { model, Mongoose, Schema, Types } from "mongoose";
 
 // const Schema = mongoose.Schema;
 
 interface UserType {
-  id: string;
+  _id: string;
   username: string;
   profile_picture: string;
   password: string;
@@ -15,7 +15,7 @@ interface UserType {
 
 const user = new Schema<UserType>({
   _id: {
-    type: String,
+    type: Types.ObjectId,
   },
   username: {
     type: String,
@@ -39,6 +39,6 @@ const user = new Schema<UserType>({
   },
 })
 
-const User = model("User", user, "users")
+const User = model<UserType>("User", user, "users")
 
 export default User;

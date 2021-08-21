@@ -1,42 +1,35 @@
 import { Request, Response } from "express";
+import User from "../model/user";
 import { Model, Schema, Types } from "mongoose";
 import Conversation, { ConversationType } from "../model/conversation";
-import Profile from "../model/profile";
 
 // create new conversation between 2 people
 export const createConversation = async (req: Request, res: Response) => {
-  const creator = req.body.creator
-  const visitor = req.body.visitor
+  const members = req.body.members
 
   const conversation = new Conversation({
     _id: Types.ObjectId(),
-    members: [creator, visitor],
+    members: members,
     created_at: req.body.createdAt,
-    shared_media: ["none"],
+    updated_at: req.body.updatedAt,
+    avatar: "s3_url",
+    chatName: "",
     status: req.body.status
   })
 
   // get conversation of 2 people
   const listConversations = await Conversation.find({ $expr: { $eq: [{ $size: "$members" }, 2] } })
 
-  let sameConversation = 0
+  const sameConversation = listConversations
+    .filter(conversation =>
+      conversation.members.includes(members[0])
+      && conversation.members.includes(members[1]))
 
-  listConversations.map((conversation) => {
-    // console.log(conversation.members[0].user_id)
-    // console.log(conversation.members[1].user_id)
-    // console.log(conversation.members[0].user_id)
-    // console.log(conversation.members[0].user_id)
-    if (conversation.members[0].user_id === creator.user_id && conversation.members[1].user_id === visitor.user_id) sameConversation += 1
-    if (conversation.members[0].user_id === visitor.user_id && conversation.members[1].user_id === creator.user_id) sameConversation += 1
-  })
-
-  console.log(sameConversation)
-
-  if (sameConversation > 0) {
+  if (sameConversation.length > 0) {
     return res.status(200).json({
       success: false,
       message: "Conversation exists",
-      error: `Already have conversation with user: ${visitor.username}`,
+      error: `Already have conversation with this user!`,
     });
   }
 
@@ -50,7 +43,7 @@ export const createConversation = async (req: Request, res: Response) => {
         })
       })
       .catch((error: any) => {
-        res.status(500).json({
+        return res.status(500).json({
           success: false,
           message: "Internal server error",
           error: error.message,
@@ -61,14 +54,20 @@ export const createConversation = async (req: Request, res: Response) => {
 }
 
 export const getActiveConversations = async (req: Request, res: Response) => {
-  const type = req.params.type
-  // another params is current user_id
-  console.log(type)
+  const status = req.params.status
+  const username = req.params.username
 
   // get conversation of 2 people
-  const listConversations = await Conversation.find({ $expr: { $eq: ["$status", type] } }).then((result) => {
-    console.log(result)
-    // TODO: filter to get conversations contains only currentUser's id
-  })
-
+  const listConversations = await Conversation
+    .find({ status: status })
+    .then((result) => {
+      // TODO: filter to get conversations contains only currentUser's username
+      return result.filter((conversation) => conversation.members.includes(username))
+    })
+    .then((conversations) => {
+      return res.status(200).json({
+        success: true,
+        data: conversations
+      })
+    })
 }
