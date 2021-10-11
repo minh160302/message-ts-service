@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import User from "../model/user";
 import { Model, Schema, Types } from "mongoose";
 import Conversation, { ConversationType } from "../model/conversation";
+import Messages from "../model/messages";
+import { fetchMessages } from "./room";
 
 // create new conversation between 2 people
 export const createConversation = async (req: Request, res: Response) => {
@@ -18,7 +20,8 @@ export const createConversation = async (req: Request, res: Response) => {
   })
 
   // get conversation of 2 people
-  const listConversations = await Conversation.find({ $expr: { $eq: [{ $size: "$members" }, 2] } })
+  const listConversations = await Conversation
+    .find({ $expr: { $eq: [{ $size: "$members" }, 2] } })
 
   const sameConversation = listConversations
     .filter(conversation =>
@@ -36,7 +39,15 @@ export const createConversation = async (req: Request, res: Response) => {
   else {
     return conversation
       .save()
-      .then((conversation: ConversationType) => {
+      .then(async (conversation: ConversationType) => {
+        const messages = new Messages({
+          _id: Types.ObjectId(),
+          conversationId: conversation._id,
+          messages: []
+        })
+
+        await messages.save();
+
         return res.status(201).json({
           success: true,
           data: conversation
@@ -58,7 +69,7 @@ export const getActiveConversations = async (req: Request, res: Response) => {
   const username = req.params.username
 
   // get conversation of 2 people
-  const listConversations = await Conversation
+  Conversation
     .find({ status: status })
     .then((result) => {
       // TODO: filter to get conversations contains only currentUser's username
@@ -70,4 +81,14 @@ export const getActiveConversations = async (req: Request, res: Response) => {
         data: conversations
       })
     })
+}
+
+
+export const getConversationById = async (req: Request, res: Response) => {
+  const convId = req.params.id;
+  const messages = await fetchMessages(convId);
+  return res.status(200).json({
+    success: true,
+    data: messages
+  })
 }
